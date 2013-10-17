@@ -1,6 +1,12 @@
 juici2
 ======
 
+# Depdencies
+
+On things with apt:
+
+    build-essential protobuf-c-compiler protobuf-compiler libprotobuf-c0-dev
+
 
 ### LICENSE
 
