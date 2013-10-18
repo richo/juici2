@@ -4,6 +4,9 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <signal.h>
+#include <sys/signalfd.h>
+#include <sys/wait.h>
 
 #include "proto/build_payload.pb-c.h"
 
@@ -17,11 +20,29 @@ void mainloop(int socket) {
     size_t rcvd;
     pid_t build;
     BuildPayload* msg;
+    /* Setup FD sets for monitoring */
     fd_set fds;
     fd_set rfds, wfds, efds;
     FD_ZERO(&fds); FD_ZERO(&rfds); FD_ZERO(&wfds); FD_ZERO(&efds);
 
     FD_SET(socket, &fds);
+    /* Block SIGCHLD set setup signalfd for monitoring */
+    sigset_t signals;
+    sigemptyset(&signals);
+    sigaddset(&signals, SIGCHLD);
+    /* Block sigchld */
+    sigprocmask(SIG_BLOCK, &signals, NULL);
+    /* Setup a signalfd */
+    int sigfd = signalfd(-1, &signals, SFD_NONBLOCK |
+                                       SFD_CLOEXEC);
+
+    /* Add sigfd to the main set */
+    FD_SET(sigfd, &fds);
+    /* Structure to read children into */
+    struct signalfd_siginfo child;
+    size_t child_read;
+    pid_t child_pid;
+    int child_status;
 
     while(1) {
         FD_ZERO(&rfds); FD_ZERO(&wfds); FD_ZERO(&efds);
@@ -35,7 +56,7 @@ void mainloop(int socket) {
         if (res == 0) {
             // timeout wtf?
         } else if (res == -1) {
-            info("Child process exited\n");
+            warn("select call interrupted");
             break;
             // We probably saw a signal. Defer signals and do some stuff.
         } else {
@@ -49,6 +70,23 @@ void mainloop(int socket) {
                 if (i == socket) {
                     accept_new_connection(socket, &fds);
                     info("Accepted a new connection\n");
+                } else if (i == sigfd) {
+                    child_read = read(sigfd, &child, sizeof(child));
+                    switch(child_read) {
+                        case 0:
+                        case -1:
+                            warn("Couldn't read from signalfd");
+                            continue;
+                        default:
+                            info("Recieved signal %d from %d\n",
+                                    child.ssi_signo,
+                                    child.ssi_pid);
+
+                    }
+                    if (child.ssi_signo == SIGCHLD) {
+                        child_pid = waitpid(child.ssi_pid, &child_status, 0);
+                        info("Child %d exited with status %d\n", child_pid, child_status);
+                    }
                 } else {
                     // Check if the socket is still alive
                     if (recv(i, butts, 1, MSG_PEEK) < 1) {

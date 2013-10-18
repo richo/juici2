@@ -7,11 +7,13 @@
 
 #define debug(...) fprintf(stderr, "debug: " __VA_ARGS__)
 #define info(...) fprintf(stderr,  "info: "  __VA_ARGS__)
+#define warn(...) fprintf(stderr,  "warn: "  __VA_ARGS__)
 
 #else
 
 #define debug(fmt, ...)
 #define info(fmt, ...)
+#define warn(fmt, ...)
 
 #endif
 

@@ -1,4 +1,4 @@
-CC = clang
+CC = gcc
 CFLAGS += -g -Isrc -D_DEBUG
 PROTOC_OPTS = --c_out src
 
