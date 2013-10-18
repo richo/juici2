@@ -5,7 +5,13 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <signal.h>
-#include <sys/signalfd.h>
+#ifdef __linux
+# include <sys/signalfd.h>
+#elif __APPLE__
+# include <sys/event.h>
+#else
+# error "Don't know how to wire up a signalfd on your platform"
+#endif
 #include <sys/wait.h>
 
 #include "proto/build_payload.pb-c.h"
@@ -33,14 +39,25 @@ void mainloop(int socket) {
     /* Block sigchld */
     sigprocmask(SIG_BLOCK, &signals, NULL);
     /* Setup a signalfd */
+#ifdef __linux
     int sigfd = signalfd(-1, &signals, SFD_NONBLOCK |
                                        SFD_CLOEXEC);
-
+    struct signalfd_siginfo child;
+    size_t child_read;
+#elif __APPLE__
+    int sigfd = kqueue();
+    int kq_status;
+    struct kevent ke, child;
+    EV_SET(&ke, SIGCHLD, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
+    i = kevent(sigfd, &ke, 1, NULL, 0, NULL);
+    if (i == -1) {
+        warn("Couldn't set up sigfd\n");
+        return;
+    }
+#endif
     /* Add sigfd to the main set */
     FD_SET(sigfd, &fds);
     /* Structure to read children into */
-    struct signalfd_siginfo child;
-    size_t child_read;
     pid_t child_pid;
     int child_status;
 
@@ -71,6 +88,7 @@ void mainloop(int socket) {
                     accept_new_connection(socket, &fds);
                     info("Accepted a new connection\n");
                 } else if (i == sigfd) {
+#ifdef __linux
                     child_read = read(sigfd, &child, sizeof(child));
                     switch(child_read) {
                         case 0:
@@ -87,6 +105,16 @@ void mainloop(int socket) {
                         child_pid = waitpid(child.ssi_pid, &child_status, 0);
                         info("Child %d exited with status %d\n", child_pid, child_status);
                     }
+#elif __APPLE__
+                    kq_status = kevent(sigfd, NULL, 0, &child, 1, NULL);
+                    if (kq_status == -1) {
+                        warn("kevent read failed\n");
+                        return;
+                    }
+                    info("Recieved signal %d\n", child.ident);
+                    child_pid = wait(&child_status);
+                    info("Child %d exited with status %d\n", child_pid, child_status);
+#endif
                 } else {
                     // Check if the socket is still alive
                     if (recv(i, butts, 1, MSG_PEEK) < 1) {
