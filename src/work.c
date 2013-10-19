@@ -111,7 +111,7 @@ void mainloop(int socket) {
                         warn("kevent read failed\n");
                         return;
                     }
-                    info("Recieved signal %d\n", child.ident);
+                    info("Recieved signal %ld\n", child.ident);
                     child_pid = wait(&child_status);
                     info("Child %d exited with status %d\n", child_pid, child_status);
 #endif
