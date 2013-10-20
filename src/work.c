@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
+#include <math.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include <signal.h>
@@ -19,6 +20,7 @@
 #include "socket.h"
 #include "build.h"
 #include "log.h"
+#include "notification.h"
 
 void mainloop(int socket) {
     uint8_t butts[2048];
@@ -26,6 +28,15 @@ void mainloop(int socket) {
     size_t rcvd;
     pid_t build;
     BuildPayload* msg;
+    /* Allocate some handlers on the heap */
+    fd_list **subscriptions;
+    /* Be super pessimistic about how many pids we might see */
+#define ___MAX_PIDS pow(sizeof(pid_t), 8)
+    subscriptions = malloc(sizeof(fd_list) * ___MAX_PIDS);
+    memset(subscriptions, 0, ___MAX_PIDS);
+    fd_list *new_sub;
+    fd_list *sub_node;
+#undef ___MAX_PIDS
     /* Setup FD sets for monitoring */
     fd_set fds;
     fd_set rfds, wfds, efds;
@@ -104,6 +115,7 @@ void mainloop(int socket) {
                     if (child.ssi_signo == SIGCHLD) {
                         child_pid = waitpid(child.ssi_pid, &child_status, 0);
                         info("Child %d exited with status %d\n", child_pid, child_status);
+                        notify(subscriptions, child_pid, child_status);
                     }
 #elif __APPLE__
                     kq_status = kevent(sigfd, NULL, 0, &child, 1, NULL);
@@ -114,6 +126,7 @@ void mainloop(int socket) {
                     info("Recieved signal %ld\n", child.ident);
                     child_pid = wait(&child_status);
                     info("Child %d exited with status %d\n", child_pid, child_status);
+                    notify(subscriptions, child_pid, child_status);
 #endif
                 } else {
                     // Check if the socket is still alive
@@ -129,7 +142,20 @@ void mainloop(int socket) {
                     }
                     info("command -> %s\n", msg->command);
                     build = start_build(msg);
-                    info("Started a new build from %d\n", i);
+                    info("Started a new build from %d with pid %d\n", i, build);
+                    /* Implicitly subscribe whoever kicked off the build */
+                    new_sub = malloc(sizeof(fd_list));
+                    new_sub->fd = i;
+                    new_sub->next = NULL;
+                    if (subscriptions[build] == NULL) {
+                        subscriptions[build] = new_sub;
+                    } else {
+                        sub_node = subscriptions[build];
+                        while (sub_node != NULL) {
+                            sub_node = sub_node->next;
+                        }
+                        sub_node->next = new_sub;
+                    }
                 }
             }
         }

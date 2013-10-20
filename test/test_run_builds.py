@@ -20,7 +20,7 @@ class TestRunBuilds(JuiciTestCase):
         payload = struct.pack(">I", length) + payload
         sock = self.socket()
         sock.send(payload)
-        time.sleep(1) # Ew
+        status = sock.recv(16)
 
         with open("%s/file" % directory, "r") as fh:
             self.assertEqual(fh.read(), "butts\n")
