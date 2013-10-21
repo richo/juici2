@@ -7,14 +7,15 @@
 
 #define debug(...) fprintf(stderr, "debug: " __VA_ARGS__)
 #define info(...) fprintf(stderr,  "info: "  __VA_ARGS__)
-#define warn(...) fprintf(stderr,  "warn: "  __VA_ARGS__)
 
 #else
 
 #define debug(fmt, ...)
 #define info(fmt, ...)
-#define warn(fmt, ...)
 
 #endif
+
+#define warn(...) fprintf(stderr,  "warn: "  __VA_ARGS__)
+#define error(...) fprintf(stderr,  "warn: "  __VA_ARGS__)
 
 #endif /* __JUICI_LOG_H */
