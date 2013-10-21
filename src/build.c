@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "proto/build_payload.pb-c.h"
+#include "proto/build_request.pb-c.h"
 #include "build.h"
 #include "worktree.h"
 
-pid_t start_build(BuildPayload* payload) {
+pid_t start_build(BuildRequest* request) {
     // TODO create worktree
     // TODO locking
     // TODO signal mask
@@ -22,7 +22,7 @@ pid_t start_build(BuildPayload* payload) {
         goto err;
     }
     // TODO Write a shebang line if one doesn't exist
-    if (fwrite(payload->command, strlen(payload->command), 1, script) != 1) {
+    if (fwrite(request->command, strlen(request->command), 1, script) != 1) {
         goto err;
     }
     fclose(script);
@@ -32,7 +32,7 @@ pid_t start_build(BuildPayload* payload) {
             goto err;
         case 0: /* child */
             chdir(WORKTREE);
-            chdir(payload->workspace);
+            chdir(request->workspace);
             execl("/bin/sh", "/bin/sh", filename, (char*)0);
         default: /* parent */
             return pid;

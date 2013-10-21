@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <sys/select.h>
 
-#include "proto/build_payload.pb-c.h"
+#include "proto/build_request.pb-c.h"
 
 #include "socket.h"
 
@@ -38,9 +38,9 @@ err:
     return -1;
 }
 
-BuildPayload* load_payload(int sock) {
+BuildRequest* load_request(int sock) {
     uint32_t msg_size;
-    BuildPayload *msg;
+    BuildRequest *msg;
     char c;
     int res = 0;
     size_t rcvd = 0;
@@ -65,7 +65,7 @@ BuildPayload* load_payload(int sock) {
         rcvd += res;
     }
 
-    msg = build_payload__unpack(NULL, msg_size, buf);
+    msg = build_request__unpack(NULL, msg_size, buf);
     if (msg == NULL)
     {
         goto err;

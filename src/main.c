@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include "proto/build_payload.pb-c.h"
+#include "proto/build_request.pb-c.h"
 
 #include "log.h"
 #include "socket.h"

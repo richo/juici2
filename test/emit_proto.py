@@ -1,7 +1,7 @@
 import sys
 import struct
 import argparse
-from proto.build_payload_pb2 import BuildPayload
+from proto.build_request_pb2 import BuildRequest
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--workspace", help="workspace to build in")
@@ -10,13 +10,13 @@ parser.add_argument("--priority", type=int, help="priority for the build", defau
 args = parser.parse_args()
 
 
-b = BuildPayload()
+b = BuildRequest()
 
 b.workspace = args.workspace
 b.command = args.command
 b.priority = args.priority
 
-payload = b.SerializeToString()
-length = len(payload)
+request = b.SerializeToString()
+length = len(request)
 sys.stdout.write(struct.pack(">I", length))
-sys.stdout.write(payload)
+sys.stdout.write(request)

@@ -15,7 +15,7 @@
 #endif
 #include <sys/wait.h>
 
-#include "proto/build_payload.pb-c.h"
+#include "proto/build_request.pb-c.h"
 
 #include "socket.h"
 #include "build.h"
@@ -28,7 +28,7 @@ void mainloop(int socket) {
     int res, i;
     size_t rcvd;
     pid_t build;
-    BuildPayload* msg;
+    BuildRequest* msg;
     /* Allocate some handlers on the heap */
     fd_list **subscriptions;
     /* Be super pessimistic about how many pids we might see */
@@ -136,9 +136,9 @@ void mainloop(int socket) {
                         FD_CLR(i, &fds);
                         continue;
                     }
-                    msg = load_payload(i);
+                    msg = load_request(i);
                     if (!msg) {
-                        info("Got a null payload from %d\n", i);
+                        info("Got a null request from %d\n", i);
                         continue;
                     }
                     info("command -> %s\n", msg->command);

@@ -1,4 +1,4 @@
-message BuildPayload
+message BuildRequest
 {
     required string workspace = 1;
     required string command   = 2;
