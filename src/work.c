@@ -177,6 +177,9 @@ void mainloop(int socket) {
                                 }
                                 sub_node->next = new_sub;
                             }
+                            /* TODO: Write out the pid + a nonce to the client.
+                             * TODO: Implement an implicit subscribe flag in the build request
+                             */
                             break;
                         default:
                             error("Unknown message type %d\n", msg_type);
