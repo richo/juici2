@@ -82,7 +82,7 @@ void mainloop(int socket) {
         res = select(FD_SETSIZE, &rfds, NULL, &efds, NULL);
         info("got %d fds\n", res);
         if (res == 0) {
-            // timeout wtf?
+            error("No fd's returned from select\n");
         } else if (res == -1) {
             warn("select call interrupted");
             break;
