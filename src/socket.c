@@ -70,6 +70,7 @@ BuildRequest* load_request(int sock) {
     {
         goto err;
     }
+    free(buf);
     return msg;
 err:
     free(buf);
