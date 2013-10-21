@@ -141,7 +141,10 @@ void mainloop(int socket) {
                     msg_type = load_message_type(i);
                     switch(msg_type) {
                         case MSG_ERROR:
+                            /* Connection is irreperably damaged */
                             error("Couldn't decode message type\n");
+                            close(i);
+                            FD_CLR(i, &fds);
                             break;
                         case MSG_BUILD_REQUEST:
                             msg = load_request(i);
