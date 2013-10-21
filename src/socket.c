@@ -44,7 +44,8 @@ enum message_type load_message_type(int sock) {
     if(recv(sock, &msg_type, sizeof(uint32_t), MSG_WAITALL) != sizeof(uint32_t)) {
         return MSG_ERROR;
     }
-    return MSG_BUILD_REQUEST;
+    msg_type = ntohl(msg_type);
+    return (enum message_type)msg_type;
 }
 
 BuildRequest* load_request(int sock) {
