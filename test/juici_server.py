@@ -4,6 +4,9 @@ import subprocess as sp
 
 JUICI_SOCKET = "/tmp/juici.sock"
 
+MSG_ERROR         = 0x00
+MSG_BUILD_REQUEST = 0x01
+
 class JuiciServer(object):
     """Wraps an instance of the juici server
 

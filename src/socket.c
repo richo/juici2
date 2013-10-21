@@ -38,6 +38,15 @@ err:
     return -1;
 }
 
+enum message_type load_message_type(int sock) {
+    uint32_t msg_type;
+
+    if(recv(sock, &msg_type, sizeof(uint32_t), MSG_WAITALL) != sizeof(uint32_t)) {
+        return MSG_ERROR;
+    }
+    return MSG_BUILD_REQUEST;
+}
+
 BuildRequest* load_request(int sock) {
     uint32_t msg_size;
     BuildRequest *msg;

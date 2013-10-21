@@ -28,6 +28,7 @@ void mainloop(int socket) {
     int res, i;
     size_t rcvd;
     pid_t build;
+    enum message_type msg_type;
     BuildRequest* msg;
     /* Allocate some handlers on the heap */
     fd_list **subscriptions;
@@ -136,32 +137,43 @@ void mainloop(int socket) {
                         FD_CLR(i, &fds);
                         continue;
                     }
-                    msg = load_request(i);
-                    if (!msg) {
-                        info("Got a null request from %d\n", i);
-                        continue;
-                    }
-                    info("command -> %s\n", msg->command);
-                    info("creating worktree %s\n", msg->workspace);
-                    if (init_worktree2(msg->workspace) != 0) {
-                        /* TODO: Actually bail out of this */
-                        error("Couldn't create worktree %s\n", msg->workspace);
-                    }
-                    build = start_build(msg);
-                    info("Started a new build from %d with pid %d\n", i, build);
-                    build_request__free_unpacked(msg, NULL);
-                    /* Implicitly subscribe whoever kicked off the build */
-                    new_sub = malloc(sizeof(fd_list));
-                    new_sub->fd = i;
-                    new_sub->next = NULL;
-                    if (subscriptions[build] == NULL) {
-                        subscriptions[build] = new_sub;
-                    } else {
-                        sub_node = subscriptions[build];
-                        while (sub_node != NULL) {
-                            sub_node = sub_node->next;
-                        }
-                        sub_node->next = new_sub;
+
+                    msg_type = load_message_type(i);
+                    switch(msg_type) {
+                        case MSG_ERROR:
+                            error("Couldn't decode message type\n");
+                            break;
+                        case MSG_BUILD_REQUEST:
+                            msg = load_request(i);
+                            if (!msg) {
+                                info("Got a null request from %d\n", i);
+                                continue;
+                            }
+                            info("command -> %s\n", msg->command);
+                            info("creating worktree %s\n", msg->workspace);
+                            if (init_worktree2(msg->workspace) != 0) {
+                                /* TODO: Actually bail out of this */
+                                error("Couldn't create worktree %s\n", msg->workspace);
+                            }
+                            build = start_build(msg);
+                            info("Started a new build from %d with pid %d\n", i, build);
+                            build_request__free_unpacked(msg, NULL);
+                            /* Implicitly subscribe whoever kicked off the build */
+                            new_sub = malloc(sizeof(fd_list));
+                            new_sub->fd = i;
+                            new_sub->next = NULL;
+                            if (subscriptions[build] == NULL) {
+                                subscriptions[build] = new_sub;
+                            } else {
+                                sub_node = subscriptions[build];
+                                while (sub_node != NULL) {
+                                    sub_node = sub_node->next;
+                                }
+                                sub_node->next = new_sub;
+                            }
+                            break;
+                        default:
+                            error("Unknown message type %d\n", msg_type);
                     }
                 }
             }

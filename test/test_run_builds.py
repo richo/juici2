@@ -2,6 +2,8 @@ import time
 import struct
 import tempfile
 
+import juici_server
+
 from juici_testcase import JuiciTestCase
 from proto.build_request_pb2 import BuildRequest
 
@@ -16,7 +18,8 @@ class TestRunBuilds(JuiciTestCase):
 
         request = bp.SerializeToString()
         length = len(request)
-        request = struct.pack(">I", length) + request
+        msg_type = juici_server.MSG_BUILD_REQUEST
+        request = struct.pack(">II", msg_type, length) + request
         sock = self.socket()
         sock.send(request)
         status = sock.recv(16)
@@ -32,7 +35,8 @@ class TestRunBuilds(JuiciTestCase):
 
         request = bp.SerializeToString()
         length = len(request)
-        request = struct.pack(">I", length) + request
+        msg_type = juici_server.MSG_BUILD_REQUEST
+        request = struct.pack(">II", msg_type, length) + request
         sock = self.socket()
         sock.send(request)
         status = sock.recv(16)
