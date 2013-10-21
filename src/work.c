@@ -149,6 +149,7 @@ void mainloop(int socket) {
                     }
                     build = start_build(msg);
                     info("Started a new build from %d with pid %d\n", i, build);
+                    build_request__free_unpacked(msg, NULL);
                     /* Implicitly subscribe whoever kicked off the build */
                     new_sub = malloc(sizeof(fd_list));
                     new_sub->fd = i;
