@@ -149,8 +149,11 @@ void mainloop(int socket) {
                                 info("Got a null request from %d\n", i);
                                 continue;
                             }
-                            info("command -> %s\n", msg->command);
-                            info("creating worktree %s\n", msg->workspace);
+                            info("new payload\n");
+                            info(" command  : %s\n", msg->command);
+                            info(" workspace: %s\n", msg->workspace);
+                            info(" priority : %d\n", msg->priority);
+                            info("--\n");
                             if (init_worktree2(msg->workspace) != 0) {
                                 /* TODO: Actually bail out of this */
                                 error("Couldn't create worktree %s\n", msg->workspace);
