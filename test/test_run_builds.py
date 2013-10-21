@@ -24,3 +24,20 @@ class TestRunBuilds(JuiciTestCase):
 
         with open("%s/file" % directory, "r") as fh:
             self.assertEqual(fh.read(), "butts\n")
+
+    def test_runs_in_worktree(self):
+        bp = BuildPayload()
+        bp.workspace = "test_butts_lol"
+        bp.title = "test"
+        bp.command = "echo butts > file"
+        bp.priority = 10
+
+        payload = bp.SerializeToString()
+        length = len(payload)
+        payload = struct.pack(">I", length) + payload
+        sock = self.socket()
+        sock.send(payload)
+        status = sock.recv(16)
+
+        with open("worktree/test_butts_lol/file", "r") as fh:
+            self.assertEqual(fh.read(), "butts\n")

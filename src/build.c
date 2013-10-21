@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "proto/build_payload.pb-c.h"
 #include "build.h"
+#include "worktree.h"
 
 pid_t start_build(BuildPayload* payload) {
     // TODO create worktree
@@ -30,6 +31,8 @@ pid_t start_build(BuildPayload* payload) {
         case -1: /* error */
             goto err;
         case 0: /* child */
+            chdir(WORKTREE);
+            chdir(payload->workspace);
             execl("/bin/sh", "/bin/sh", filename, (char*)0);
         default: /* parent */
             return pid;

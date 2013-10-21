@@ -21,6 +21,7 @@
 #include "build.h"
 #include "log.h"
 #include "notification.h"
+#include "worktree.h"
 
 void mainloop(int socket) {
     uint8_t butts[2048];
@@ -141,6 +142,11 @@ void mainloop(int socket) {
                         continue;
                     }
                     info("command -> %s\n", msg->command);
+                    info("creating worktree %s\n", msg->workspace);
+                    if (init_worktree2(msg->workspace) != 0) {
+                        /* TODO: Actually bail out of this */
+                        error("Couldn't create worktree %s\n", msg->workspace);
+                    }
                     build = start_build(msg);
                     info("Started a new build from %d with pid %d\n", i, build);
                     /* Implicitly subscribe whoever kicked off the build */
