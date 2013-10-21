@@ -11,7 +11,6 @@ class TestRunBuilds(JuiciTestCase):
 
         bp = BuildPayload()
         bp.workspace = "test"
-        bp.title = "test"
         bp.command = "echo butts > %s/file" % directory
         bp.priority = 10
 
@@ -28,7 +27,6 @@ class TestRunBuilds(JuiciTestCase):
     def test_runs_in_worktree(self):
         bp = BuildPayload()
         bp.workspace = "test_butts_lol"
-        bp.title = "test"
         bp.command = "echo butts > file"
         bp.priority = 10
 
