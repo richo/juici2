@@ -101,6 +101,7 @@ void mainloop(int socket) {
                     accept_new_connection(socket, &fds);
                     info("Accepted a new connection\n");
                 } else if (i == sigfd) {
+                    child_status = 0;
 #ifdef __linux
                     child_read = read(sigfd, &child, sizeof(child));
                     switch(child_read) {
@@ -116,6 +117,7 @@ void mainloop(int socket) {
                     }
                     if (child.ssi_signo == SIGCHLD) {
                         child_pid = waitpid(child.ssi_pid, &child_status, 0);
+                        child_status = WEXITSTATUS(child_status);
                         info("Child %d exited with status %d\n", child_pid, child_status);
                         notify(subscriptions, child_pid, child_status);
                     }
@@ -127,6 +129,7 @@ void mainloop(int socket) {
                     }
                     info("Recieved signal %ld\n", child.ident);
                     child_pid = wait(&child_status);
+                    child_status = WEXITSTATUS(child_status);
                     info("Child %d exited with status %d\n", child_pid, child_status);
                     notify(subscriptions, child_pid, child_status);
 #endif
