@@ -5,7 +5,9 @@
 
 enum message_type {
     MSG_ERROR         = 0x00,
-    MSG_BUILD_REQUEST = 0x01
+    MSG_BUILD_REQUEST = 0x01,
+    MSG_BUILD_STARTED = 0x02,
+    MSG_BUILD_COMPLETE = 0x03
 };
 
 int juici_socket(void);

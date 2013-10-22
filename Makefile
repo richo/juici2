@@ -3,8 +3,12 @@ CFLAGS += -g -Isrc -D_DEBUG
 PROTOC_OPTS = --c_out src
 
 PROTOBUF_CFLAGS = -lprotobuf-c
-PROTOBUFS = src/proto/build_request.pb-c.o
-TEST_PROTOBUFS = test/proto/build_request_pb2.py
+PROTOBUFS = src/proto/build_request.pb-c.o \
+			src/proto/build_started.pb-c.o \
+			src/proto/build_complete.pb-c.o
+TEST_PROTOBUFS = test/proto/build_request_pb2.py \
+				 test/proto/build_started_pb2.py \
+				 test/proto/build_complete_pb2.py
 BINS = bin/juici
 OBJS = src/build.o src/socket.o src/work.o src/notification.o src/worktree.o
 

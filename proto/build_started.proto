@@ -1,0 +1,6 @@
+message BuildStarted
+{
+/* Build ID is logically composed of nonce:pid */
+    required sint32 pid = 1;
+    required sint32 nonce = 2 [default = 0];
+}

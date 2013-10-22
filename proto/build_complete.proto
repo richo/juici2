@@ -1,0 +1,6 @@
+message BuildComplete
+{
+    required sint32 pid = 1;
+    required sint32 nonce = 2 [default = 0];
+    required sint32 status = 3;
+}
