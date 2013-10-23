@@ -69,3 +69,32 @@ class TestRunBuilds(JuiciTestCase):
         resp.ParseFromString(status[8:])
 
         self.assertEqual(resp.status, 2)
+
+    def test_sets_environment_variables(self):
+        directory = tempfile.mkdtemp()
+
+        bp = BuildRequest()
+        bp.workspace = "test"
+        bp.command = """[ "$butts_key" = "lol" ]"""
+        bp.priority = 10
+
+        env_var = bp.environment.add()
+        env_var.key = "butts_key"
+        env_var.value = "lol"
+
+        request = bp.SerializeToString()
+        length = len(request)
+        msg_type = juici_server.MSG_BUILD_REQUEST
+        request = struct.pack(">II", msg_type, length) + request
+        sock = self.socket()
+        sock.send(request)
+        status = sock.recv(1024)
+
+        msg_type, size = struct.unpack(">II", status[0:8])
+
+        self.assertEqual(msg_type, juici_server.MSG_BUILD_COMPLETE)
+
+        resp = BuildComplete()
+        resp.ParseFromString(status[8:])
+
+        self.assertEqual(resp.status, 0)

@@ -13,7 +13,9 @@ pid_t start_build(BuildRequest* request) {
     // TODO output capture into unlinked file
     char filename[] = "/tmp/juici-XXXXXXXXX";
     pid_t pid;
+    int i;
     int scriptfd = mkstemp(filename);
+    EnvironmentVariable *env_var;
     if (scriptfd == -1) {
         goto err;
     }
@@ -33,6 +35,15 @@ pid_t start_build(BuildRequest* request) {
         case 0: /* child */
             chdir(WORKTREE);
             chdir(request->workspace);
+            for (i = 0; i < request->n_environment; i++) {
+                env_var = request->environment[i];
+                if (env_var->value != NULL) {
+                    setenv(env_var->key, env_var->value, 1);
+                } else {
+                    unsetenv(env_var->key);
+                }
+            }
+
             execl("/bin/sh", "/bin/sh", filename, (char*)0);
         default: /* parent */
             return pid;
