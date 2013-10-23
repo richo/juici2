@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <sys/select.h>
 
-#include "proto/build_request.pb-c.h"
-
 #include "socket.h"
 
 int juici_socket(void) {

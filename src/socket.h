@@ -1,6 +1,8 @@
 #ifndef __JUICI_SOCKET_H
 #define __JUICI_SOCKET_H
 
+#include "proto/build_request.pb-c.h"
+
 #define JUICI_SOCKET_PATH "/tmp/juici.sock"
 
 enum message_type {
