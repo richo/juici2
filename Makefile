@@ -16,8 +16,8 @@ OBJS = src/build.o src/socket.o src/work.o src/notification.o src/worktree.o
 
 all: $(BINS)
 
-bin/juici: $(PROTOBUFS) src/main.c $(OBJS)
-	$(CC) -o $@ $(CFLAGS) src/main.c $(PROTOBUFS) $(PROTOBUF_CFLAGS) $(OBJS)
+bin/juici: src/main.c $(PROTOBUFS) $(OBJS)
+	$(CC) -o $@ $(CFLAGS) $< $(PROTOBUFS) $(PROTOBUF_CFLAGS) $(OBJS)
 
 %.o: %.c
 	$(CC) -c -o $@ $(CFLAGS) $<
